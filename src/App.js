@@ -13,14 +13,15 @@ app.use(cors())
 // import static files
 app.use('/uploads', express.static('assets/uploads'))
 
-// const tokenAuth = require('./middleware/auth')
+const tokenAuth = require('./middleware/auth')
 
 const authRoute = require('./routes/auth')
 const userRoute = require('./routes/users')
+const msgRoute = require('./routes/message')
 
 app.use('/auth', authRoute)
-app.use('/users', userRoute)
-// app.use('/news', tokenAuth, newsRoute)
+app.use('/users', tokenAuth, userRoute)
+app.use('/message', tokenAuth, msgRoute)
 // app.use('/bookmarks', tokenAuth, bookmarksRoute)
 
 app.listen(APP_PORT, () => {

@@ -1,5 +1,4 @@
 const { User } = require('../models')
-const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const responseStandard = require('../helpers/response')
 
@@ -26,7 +25,8 @@ module.exports = {
     }
   },
   showUser: async (req, res) => {
-    const result = await User.findAll()
-    responseStandard(res, 'List users', {result}, 200, true)
+    const { id } = req.user.detailUser
+    const result = await User.findByPk(id)
+    responseStandard(res, 'Detail user', {result}, 200, true)
   }
 }
