@@ -2,7 +2,6 @@
 const {
   Model
 } = require('sequelize');
-// const { FOREIGNKEYS } = require('sequelize/types/lib/query-types');
 module.exports = (sequelize, DataTypes) => {
   class Chat extends Model {
     /**
@@ -12,13 +11,14 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Chat.belongsTo(models.User, { foreignKey: 'id_sender'})
+      Chat.belongsTo(models.User, { foreignKey: 'id_receiver' })
     }
   };
   Chat.init({
     id_sender: DataTypes.INTEGER,
     id_receiver: DataTypes.INTEGER,
-    message: DataTypes.STRING
+    message: DataTypes.STRING,
+    isLatest: DataTypes.BOOLEAN
   }, {
     sequelize,
     modelName: 'Chat',

@@ -14,61 +14,68 @@ module.exports = {
       ]},
       order: [['createdAt', 'DESC']]
     })
+    console.log(chat)
     if(chat.length>0) {
       responseStandard(res, 'Message list', {chat}, 200, true)
     } else { 
       responseStandard(res, 'No message found', {}, 400, false)
     }
   },
-  allChat0:  async (req, res) => {
-    const { id } = req.user.detailUser
-    const friend = [0, 1, 2,3,4,5,6,7,8,9]
-    const chat = await Chat.findAll({
-      attributes: { exclude: 'updatedAt' },
-      where: { [Op.and]: [
-        { [Op.or]: [{ id_sender: id }, { id_receiver: id }] },
-        { [Op.or]: [{ id_sender: friend }, { id_receiver: friend }] }
-      ]},
-      order: [['createdAt', 'DESC']]
-    })
-    // const mapping = chat.map((item, index)=>{
-    //   let sender = item.id_sender
-    //   item.map
-    //   if(sender===6){
-    //     return index
-    //   }
-    // })
-    // console.log(mapping)
-    responseStandard(res, 'List Messages', {chat}, 200, true)
-  },
   allChat:  async (req, res) => {
     const { id } = req.user.detailUser
     const chat = await Chat.findAll({
-      // attributes: {
-      //   exclude: 'id_sender'
-      // },
-      where: { 
-        [Op.or]: [{ id_sender: id }, { id_receiver: id }]
-      },
-      // group: 'id_sender',
+      include: { model: User, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+      attributes: { exclude: 'updatedAt' },
+      where: { isLatest: true },
       order: [['createdAt', 'DESC']]
     })
-    // const mapping = chat.map((item, index)=>{
-    //   let sender = item.id_sender
-    //   item.map
-    //   if(sender===6){
-    //     return index
-    //   }
-    // })
-    // console.log(mapping)
     responseStandard(res, 'List Messages', {chat}, 200, true)
   },
   newChat: async (req, res) => {
     const { id } = req.user.detailUser
     const { id_receiver, chat } = req.body
-    const result = await Chat.create({ id_sender: id, id_receiver: id_receiver, message: chat})
-    console.log(result.dataValues)
-    responseStandard(res, 'Message send', {result}, 200, true)
+    let privateChat = await Chat.findAll({
+      attributes: { exclude: 'updatedAt', include: 'isLatest' },
+      where: { [Op.and]: [
+        { [Op.or]: [{ id_sender: id }, { id_receiver: id }] },
+        { [Op.or]: [{ id_sender: id_receiver }, { id_receiver: id_receiver }] }
+      ]},
+      order: [['createdAt', 'DESC']]
+    })
+    if(privateChat.length>1){
+      console.log('chat receive and send 1')
+    } else {
+      privateChat = await Chat.findAll({
+        attributes: { exclude: 'updatedAt', include: 'isLatest' },
+        where: { [Op.or]: [{ id_sender: id }, { id_receiver: id }]},
+        order: [['createdAt', 'DESC']]
+      })
+    }
+    const update = privateChat.map(item=>{
+      item.isLatest = false
+      item.save()
+      return item.isLatest
+    })
+    const result = await Chat.create({ id_sender: id, id_receiver: id_receiver, message: chat, isLatest: true })    
+    // console.log(update)
+    let allChat = await Chat.findAll({
+      attributes: { exclude: 'updatedAt', include: 'isLatest' },
+      where: { [Op.and]: [
+        { [Op.or]: [{ id_sender: id }, { id_receiver: id }] },
+        { [Op.or]: [{ id_sender: id_receiver }, { id_receiver: id_receiver }] }
+      ]},
+      order: [['createdAt', 'DESC']]
+    })
+    if(allChat.length>1){
+      console.log('chat receive and send 2')
+    } else {
+      allChat = await Chat.findAll({
+        attributes: { exclude: 'updatedAt', include: 'isLatest' },
+        where: { [Op.or]: [{ id_sender: id }, { id_receiver: id }]},
+        order: [['createdAt', 'DESC']]
+      })
+    }
+    responseStandard(res, 'Message send', {allChat}, 200, true)
   },
   deleteChat: async (req, res) => {
     // const { id } = req.user.detailUser
