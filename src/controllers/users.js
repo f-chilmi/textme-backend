@@ -28,5 +28,29 @@ module.exports = {
     const { id } = req.user.detailUser
     const result = await User.findByPk(id)
     responseStandard(res, 'Detail user', {result}, 200, true)
+  },
+  showAllUser: async (req, res) => {
+    const result = await User.findAll()
+    responseStandard(res, 'ALL USERS', {result}, 200, true)
+  },
+  editUser: async (req, res) => {
+    const { id } = req.user.detailUser
+    const { username } = req.body
+    const result = await User.findByPk(id)
+    // console.log(result)
+    if (result) {
+      const data = { username }
+      if (req.file) {
+        const picture = `uploads/${req.file.filename}`
+        const update = await result.update({ ...data, picture })
+        const dataUser = update.dataValues
+        // responseStandard(res, `User ${id} updated`, { data: { ...data, image } }, 200, true)
+        responseStandard(res, `User ${id} updated`, { dataUser }, 200, true)
+      } else {
+        const update = await result.update(data)
+        const dataUser = update.dataValues
+        responseStandard(res, `User ${id} updated`, { dataUser }, 200, true)
+      }
+    }
   }
 }
