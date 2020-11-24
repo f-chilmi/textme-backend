@@ -50,15 +50,14 @@ module.exports = {
       ]},
       order: [['createdAt', 'DESC']]
     })
-    private.map(item=>{
-      item.isLatest = false
-      item.save()
-      return item.isLatest
-    })
-    await Chat.create({ id_sender: id, id_receiver: id_receiver, message: chat, isLatest: true })
     if(private.length>1){
-      console.log('receive only / send only')
-    }
+      private.map(item=>{
+        item.isLatest = false
+        item.save()
+        return item.isLatest
+      })
+    }    
+    await Chat.create({ id_sender: id, id_receiver: id_receiver, message: chat, isLatest: true })
     private = await Chat.findAll({
       attributes: { exclude: 'updatedAt' },
       where: { [Op.and]: [
