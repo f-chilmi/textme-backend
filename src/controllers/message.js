@@ -50,13 +50,20 @@ module.exports = {
       ]},
       order: [['createdAt', 'DESC']]
     })
-    if(private.length>1){
-      private.map(item=>{
-        item.isLatest = false
-        item.save()
-        return item.isLatest
-      })
-    }    
+    await Chat.update({isLatest: false}, {
+      where: { [Op.and]: [
+        { [Op.or]: [{ id_sender: id }, { id_receiver: id }] },
+        { [Op.or]: [{ id_sender: id_receiver }, { id_receiver: id_receiver }] }
+      ]}
+    })
+    // if(private.length>1){
+    //   await Chat.Update({isLatest: false}, {
+    //     where: { [Op.and]: [
+    //       { [Op.or]: [{ id_sender: id }, { id_receiver: id }] },
+    //       { [Op.or]: [{ id_sender: id_receiver }, { id_receiver: id_receiver }] }
+    //     ]}
+    //   })
+    // }    
     await Chat.create({ id_sender: id, id_receiver: id_receiver, message: chat, isLatest: true })
     private = await Chat.findAll({
       attributes: { exclude: 'updatedAt' },
