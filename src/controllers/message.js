@@ -47,13 +47,11 @@ module.exports = {
     })
     await Chat.update({isLatest: false}, {
       where: { 
-        [Op.and]: {
-          id_sender: {
-            [Op.or]: [id, id_receiver]
-          },
-          id_receiver: {
-            [Op.or]: [id, id_receiver]
-          }
+        id_sender: {
+          [Op.or]: [id, id_receiver]
+        },
+        id_receiver: {
+          [Op.or]: [id, id_receiver]
         },
         isLatest: true 
       }
