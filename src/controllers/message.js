@@ -37,11 +37,6 @@ module.exports = {
   postNewChat: async (req, res) => {
     const { id } = req.user.detailUser
     const { id_receiver, chat } = req.body
-    const allChatById = await Chat.findAll({
-      attributes: { exclude: 'updatedAt' },
-      where: { [Op.or]: [{ id_sender: id}, { id_receiver: id }] },
-      order: [['createdAt', 'DESC']]
-    })
     let private = await Chat.findAll({
       attributes: { exclude: 'updatedAt' },
       where: { [Op.and]: [
@@ -51,10 +46,17 @@ module.exports = {
       order: [['createdAt', 'DESC']]
     })
     await Chat.update({isLatest: false}, {
-      where: { [Op.and]: [
-        { [Op.or]: [{ id_sender: id }, { id_receiver: id }] },
-        { [Op.or]: [{ id_sender: id_receiver }, { id_receiver: id_receiver }] }
-      ]}
+      where: { 
+        [Op.and]: {
+          id_sender: {
+            [Op.or]: [id, id_receiver]
+          },
+          id_receiver: {
+            [Op.or]: [id, id_receiver]
+          }
+        },
+        isLatest: true 
+      }
     })
     // if(private.length>1){
     //   await Chat.Update({isLatest: false}, {
