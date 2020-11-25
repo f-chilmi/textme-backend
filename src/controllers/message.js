@@ -24,7 +24,10 @@ module.exports = {
   allChat:  async (req, res) => {
     const { id } = req.user.detailUser
     const chat = await Chat.findAll({
-      include: { model: User, attributes: { exclude: ['createdAt', 'updatedAt'] } },
+      include: [
+        {model: User, as: 'sender', attributes: { exclude: ['createdAt', 'updatedAt'] }},
+        {model: User, as: 'receiver', attributes: { exclude: ['createdAt', 'updatedAt'] }},
+      ],
       attributes: { exclude: 'updatedAt' },
       where: { 
         [Op.or]: [{ id_sender: id }, { id_receiver: id }], 
@@ -55,15 +58,7 @@ module.exports = {
         },
         isLatest: true 
       }
-    })
-    // if(private.length>1){
-    //   await Chat.Update({isLatest: false}, {
-    //     where: { [Op.and]: [
-    //       { [Op.or]: [{ id_sender: id }, { id_receiver: id }] },
-    //       { [Op.or]: [{ id_sender: id_receiver }, { id_receiver: id_receiver }] }
-    //     ]}
-    //   })
-    // }    
+    }) 
     await Chat.create({ id_sender: id, id_receiver: id_receiver, message: chat, isLatest: true })
     private = await Chat.findAll({
       attributes: { exclude: 'updatedAt' },
