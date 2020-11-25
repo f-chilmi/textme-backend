@@ -7,6 +7,10 @@ module.exports = {
     const { id } = req.user.detailUser
     const { id1, id2 } = req.params
     const chat = await Chat.findAll({
+      include: [
+        {model: User, as: 'sender', attributes: { exclude: ['createdAt', 'updatedAt'] }},
+        {model: User, as: 'receiver', attributes: { exclude: ['createdAt', 'updatedAt'] }},
+      ],
       attributes: { exclude: 'updatedAt' },
       where: { [Op.and]: [
         { [Op.or]: [{ id_sender: id1 }, { id_receiver: id1 }] },
