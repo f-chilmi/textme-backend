@@ -7,10 +7,6 @@ module.exports = {
     const { id } = req.user.detailUser
     const { id1, id2 } = req.params
     const chat = await Chat.findAll({
-      include: [
-        {model: User, as: 'sender', attributes: { exclude: ['createdAt', 'updatedAt'] }},
-        {model: User, as: 'receiver', attributes: { exclude: ['createdAt', 'updatedAt'] }},
-      ],
       attributes: { exclude: 'updatedAt' },
       where: { [Op.and]: [
         { [Op.or]: [{ id_sender: id1 }, { id_receiver: id1 }] },
@@ -18,11 +14,12 @@ module.exports = {
       ]},
       order: [['createdAt', 'DESC']]
     })
-    console.log(chat)
+    const user1 = await User.findByPk(id1)
+    const user2 = await User.findByPk(id2)
     if(chat.length>0) {
-      responseStandard(res, 'Message list', {chat}, 200, true)
+      responseStandard(res, 'Message list', {user1, user2, chat}, 200, true)
     } else { 
-      responseStandard(res, 'No message found', {}, 400, false)
+      responseStandard(res, 'No message found', {user1, user2}, 400, false)
     }
   },
   allChat:  async (req, res) => {
