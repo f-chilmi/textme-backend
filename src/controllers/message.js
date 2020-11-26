@@ -1,6 +1,7 @@
 const { User, Chat } = require('../models')
 const { Op } = require("sequelize")
 const responseStandard = require('../helpers/response')
+const { pagination } = require('../helpers/pagination')
 
 module.exports = {
   showChat: async (req, res) => {
@@ -21,6 +22,28 @@ module.exports = {
     } else { 
       responseStandard(res, 'No message found', {user1, user2}, 200, true)
     }
+  },
+  allChat0: async (req, res) => {
+    const { page = 1, limit = 10, search = '' } = req.query
+    const offset = (page - 1) * limit
+    const { id } = req.user.detailUser
+    const chat = await Chat.findAndCountAll({
+      include: [
+        {model: User, as: 'sender', attributes: { exclude: ['createdAt', 'updatedAt'] }},
+        {model: User, as: 'receiver', attributes: { exclude: ['createdAt', 'updatedAt'] }},
+      ],
+      attributes: { exclude: 'updatedAt' },
+      where: { 
+        [Op.or]: [{ id_sender: id }, { id_receiver: id }], 
+        isLatest: true,
+        message: { [Op.substring]: search },
+      },
+      offset: parseInt(offset),
+      limit: parseInt(limit),
+      order: [['createdAt', 'DESC']]
+    })
+    const pageInfo = pagination('message', req.query, page, limit, chat.count)
+    responseStandard(res, 'List Messages', {chat, pageInfo}, 200, true)
   },
   allChat:  async (req, res) => {
     const { id } = req.user.detailUser
