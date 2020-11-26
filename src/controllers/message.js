@@ -19,7 +19,7 @@ module.exports = {
     if(chat.length>0) {
       responseStandard(res, 'Message list', {user1, user2, chat}, 200, true)
     } else { 
-      responseStandard(res, 'No message found', {user1, user2}, 400, false)
+      responseStandard(res, 'No message found', {user1, user2}, 200, true)
     }
   },
   allChat:  async (req, res) => {
