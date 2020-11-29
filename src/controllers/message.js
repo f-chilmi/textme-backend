@@ -2,6 +2,8 @@ const { User, Chat } = require('../models')
 const { Op } = require("sequelize")
 const responseStandard = require('../helpers/response')
 const { pagination } = require('../helpers/pagination')
+// const socket = require('../helpers/socket')
+const io = require('../App')
 
 module.exports = {
   showChat: async (req, res) => {
@@ -92,6 +94,7 @@ module.exports = {
       ]},
       order: [['createdAt', 'DESC']]
     })
+    io.emit(id_receiver, {id_sender: id, chat})
     responseStandard(res, 'Message send', { private }, 200, true)
   },
   newChat: async (req, res) => {

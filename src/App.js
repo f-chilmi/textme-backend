@@ -6,6 +6,14 @@ const cors = require('cors')
 const app = express()
 const { APP_PORT } = process.env
 
+// add socket
+const server = require('http').createServer(app)
+const io = require('socket.io')(server, {})
+module.exports = io
+io.on('connection', () => {
+  console.log('A user connected to our socket')
+})
+
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(morgan('dev'))
 app.use(cors())
@@ -22,8 +30,11 @@ const msgRoute = require('./routes/message')
 app.use('/auth', authRoute)
 app.use('/users', tokenAuth, userRoute)
 app.use('/message', tokenAuth, msgRoute)
-// app.use('/bookmarks', tokenAuth, bookmarksRoute)
 
-app.listen(APP_PORT, () => {
+app.get('/', (req, res) => {
+  return res.send('socket') 
+})
+
+server.listen(APP_PORT, () => {
   console.log(`App listen on port ${APP_PORT}`)
 })

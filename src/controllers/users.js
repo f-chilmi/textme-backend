@@ -1,5 +1,6 @@
 const { User } = require('../models')
 const jwt = require('jsonwebtoken')
+const { Op } = require("sequelize")
 const responseStandard = require('../helpers/response')
 
 module.exports = {
@@ -30,7 +31,12 @@ module.exports = {
     responseStandard(res, 'Detail user', {result}, 200, true)
   },
   showAllUser: async (req, res) => {
-    const result = await User.findAll()
+    const { search='' } = req.query
+    const result = await User.findAll({
+      where: {
+        username: { [Op.substring]: search },
+      }
+    })
     responseStandard(res, 'ALL USERS', {result}, 200, true)
   },
   editUser: async (req, res) => {
