@@ -26,10 +26,12 @@ const tokenAuth = require('./middleware/auth')
 const authRoute = require('./routes/auth')
 const userRoute = require('./routes/users')
 const msgRoute = require('./routes/message')
+const notifRoute = require('./routes/notification')
 
 app.use('/auth', authRoute)
 app.use('/users', tokenAuth, userRoute)
 app.use('/message', tokenAuth, msgRoute)
+app.use('/notif', tokenAuth, notifRoute)
 
 app.get('/', (req, res) => {
   return res.send('socket') 

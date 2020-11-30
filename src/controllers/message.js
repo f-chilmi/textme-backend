@@ -1,14 +1,22 @@
-const { User, Chat } = require('../models')
+const { User, Chat, Notification } = require('../models')
 const { Op } = require("sequelize")
 const responseStandard = require('../helpers/response')
 const { pagination } = require('../helpers/pagination')
 // const socket = require('../helpers/socket')
 const io = require('../App')
+const admin = require('firebase-admin')
+const serviceAccount = require('../config/textme-312ad-firebase-adminsdk-ho0u0-50beee19eb.json')
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://textme-312ad.firebaseio.com"
+});
 
 module.exports = {
   showChat: async (req, res) => {
     const { id } = req.user.detailUser
     const { id1, id2 } = req.params
+    const { token } = req.body
     const chat = await Chat.findAll({
       attributes: { exclude: 'updatedAt' },
       where: { [Op.and]: [
@@ -19,6 +27,18 @@ module.exports = {
     })
     const user1 = await User.findByPk(id1)
     const user2 = await User.findByPk(id2)
+
+    let findToken = await Notification.findAll({where: { id_user: id } })
+    console.log(findToken)
+    if(findToken==null || findToken.length==0){
+      const create = await Notification.create({ id_user: id, token: token})
+      console.log(create)
+    } else {
+      const update = await Notification.update({ token: token }, {where: { id_user: id } })
+      console.log(update)
+    }
+    // findToken = await Notification.findAll({where: { id_user: id } })
+
     if(chat.length>0) {
       responseStandard(res, 'Message list', {user1, user2, chat}, 200, true)
     } else { 
@@ -85,7 +105,8 @@ module.exports = {
         isLatest: true 
       }
     }) 
-    await Chat.create({ id_sender: id, id_receiver: id_receiver, message: chat, isLatest: true })
+    const send = await Chat.create({ id_sender: id, id_receiver: id_receiver, message: chat, isLatest: true })
+    const sender = await User.findByPk(id)
     private = await Chat.findAll({
       attributes: { exclude: 'updatedAt' },
       where: { [Op.and]: [
@@ -94,7 +115,22 @@ module.exports = {
       ]},
       order: [['createdAt', 'DESC']]
     })
+    // console.log(sender.dataValues.username)
+    let {username} = sender.dataValues
+    username == null ? username='New user' : null
     io.emit(id_receiver, {id_sender: id, chat})
+
+    const findToken = await Notification.findAll({where: { id_user: id } })
+    // console.log(findToken[0].dataValues)
+
+    admin.messaging().send({
+      token: findToken[0].dataValues.token,
+      // topic: 'message',
+      notification: {
+        title: username,
+        body: send.dataValues.message,
+      }
+    })
     responseStandard(res, 'Message send', { private }, 200, true)
   },
   newChat: async (req, res) => {

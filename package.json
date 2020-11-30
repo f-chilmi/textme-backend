@@ -17,5 +17,8 @@
     "sequelize": "^6.3.5",
     "sequelize-cli": "^6.2.0",
     "socket.io": "^3.0.3"
+  },
+  "devDependencies": {
+    "firebase-admin": "^9.4.1"
   }
 }
