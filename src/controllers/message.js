@@ -120,7 +120,7 @@ module.exports = {
     username == null ? username='New user' : null
     io.emit(id_receiver, {id_sender: id, chat})
 
-    const findToken = await Notification.findAll({where: { id_user: id } })
+    const findToken = await Notification.findAll({where: { id_user: id_receiver } })
     // console.log(findToken[0].dataValues)
 
     admin.messaging().send({
